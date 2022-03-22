@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Blog</string>
+
+    <string-array name="blog">
+        <item>hasan#This is my first blog</item>
+        <item>lina#borahae</item>
+        <item>malak#yalla 5alesne ba2a</item>
+    </string-array>
+</resources>
