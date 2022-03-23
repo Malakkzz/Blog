@@ -3,6 +3,7 @@ package com.example.blog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         password = findViewById(R.id.password);
         info = findViewById(R.id.info);
 
+
         login.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, Signup.class);
-//                info.setText("username: "+username.getText().toString()+" Pass: " + password.getText().toString());
+                info.setText("username: "+username.getText().toString()+" Pass: " + password.getText().toString());
                 startActivity(intent);
             }
         });
@@ -60,4 +62,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
 }

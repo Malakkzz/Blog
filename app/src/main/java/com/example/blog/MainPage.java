@@ -12,11 +12,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,22 +27,31 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class MainPage extends AppCompatActivity {
 
     ArrayList<Blog> arrayList;
     ArrayAdapter<Blog> arrAdapter;
     ListView list;
+    TextView txt;
     EditText blog;
     Button post;
     String username;
     SwipeRefreshLayout refresh;
     Blog b;
+
+    private String sharedPref ="com.example.blog";
+    private SharedPreferences mPreferences;
+
     private NotificationManager mNotifManager;
     private int NOTIFICATION_ID=1;
     private final String CHANNEL_ID = "My_first_channel";
@@ -53,15 +64,24 @@ public class MainPage extends AppCompatActivity {
         createNotificationChannel(this.CHANNEL_ID);
 
         Toolbar t = (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(t);
 
         Intent intent = getIntent();
         username = intent.getStringExtra("username");
         setTitle(username);
+        mPreferences = getSharedPreferences(sharedPref,MODE_PRIVATE);
+
 
         post = findViewById(R.id.post);
         blog = findViewById(R.id.blog);
         refresh = findViewById(R.id.refresh);
+        txt = findViewById(R.id.txt);
+
+        mPreferences = getSharedPreferences(sharedPref, MODE_PRIVATE);
+//        if(savedInstanceState != null){
+            txt.setText(mPreferences.getString("firstBlog", "Welcome")+"");
+//        }
 
         arrayList = new ArrayList<>();
         arrAdapter = new ArrayAdapter<Blog>(this,
@@ -69,6 +89,8 @@ public class MainPage extends AppCompatActivity {
                 arrayList);
         list = findViewById(R.id.list);
         list.setAdapter(arrAdapter);
+
+        loadData();
 
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -125,6 +147,7 @@ public class MainPage extends AppCompatActivity {
                 arrayList.add(b);
                 arrAdapter.notifyDataSetChanged();
                 blog.setText("");
+                txt.setText(b.getBlog());
             }
         });
 
@@ -221,5 +244,45 @@ public class MainPage extends AppCompatActivity {
 
     }
 
+    public void saveData(){
+        try{
+            PrintStream ps = new PrintStream(openFileOutput("Blogs.txt", MODE_PRIVATE));
+            for(Blog b : arrayList){
+                ps.println(b.getName()+"####"+ b.getBlog());
+            }
+            ps.close();
+        } catch(FileNotFoundException e){
+            Log.d("", "Unable to open file for output "+e.getMessage(), null);
+        }
+    }
 
+    public void loadData(){
+        try {
+            Scanner scan = new Scanner(openFileInput("Blog.txt"));
+            while (scan.hasNextLine()){
+                String blog = scan.nextLine();
+                String arr[] = blog.split("####");
+                Blog b = new Blog(arr[0], arr[1]);
+                arrayList.add(b);
+                arrAdapter.notifyDataSetChanged();
+            }
+        }catch (FileNotFoundException e){
+            Log.d("", "Unable to find file "+e.getMessage(), null);
+        }
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString("firstBlog", txt.getText().toString());
+        editor.apply();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        saveData();
+    }
 }
